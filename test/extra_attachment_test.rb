@@ -9,12 +9,6 @@ class CSVAttachmentTest < Test::Unit::TestCase
       attachment = upload_file :filename => '/files/foo.csv', :content_type => ""
       assert_equal "text/csv", attachment.content_type
       assert_valid attachment
-      assert !attachment.db_file.new_record? if attachment.respond_to?(:db_file)
-      assert !attachment.image?
-      assert !attachment.size.zero?
-      #assert_equal 3, attachment.size
-      assert_nil      attachment.width
-      assert_nil      attachment.height
     end
   end  
 end
