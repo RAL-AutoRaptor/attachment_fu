@@ -331,6 +331,8 @@ module Technoweenie # :nodoc:
           self.filename =  file_data['filename']
           file_data = file_data['tempfile']
         end
+        # hack to deal with safari not passing a content type for csv files
+        self.content_type = "text/csv" if content_type.blank? and filename =~ /\.csv$/i
         if file_data.is_a?(StringIO)
           file_data.rewind
           set_temp_data file_data.read

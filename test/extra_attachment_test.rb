@@ -1,5 +1,24 @@
 require File.expand_path(File.join(File.dirname(__FILE__), 'test_helper'))
 
+class CSVAttachmentTest < Test::Unit::TestCase
+  attachment_model SmallAttachment
+
+  # should deal with blank content_type from safari issues
+  def test_should_create_file_from_uploaded_csv_from_safari
+    assert_created do
+      attachment = upload_file :filename => '/files/foo.csv', :content_type => ""
+      assert_equal "text/csv", attachment.content_type
+      assert_valid attachment
+      assert !attachment.db_file.new_record? if attachment.respond_to?(:db_file)
+      assert !attachment.image?
+      assert !attachment.size.zero?
+      #assert_equal 3, attachment.size
+      assert_nil      attachment.width
+      assert_nil      attachment.height
+    end
+  end  
+end
+
 class OrphanAttachmentTest < Test::Unit::TestCase
   include BaseAttachmentTests
   attachment_model OrphanAttachment
