@@ -88,6 +88,7 @@ ActiveRecord::Schema.define(:version => 0) do
   create_table :minimal_attachments, :force => true do |t|
     t.column :size,            :integer
     t.column :content_type,    :string, :limit => 255
+    t.column :spare_data,      :string
   end
 
   create_table :db_files, :force => true do |t|

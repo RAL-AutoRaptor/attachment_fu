@@ -83,4 +83,10 @@ end
 
 class MinimalAttachmentTest < OrphanAttachmentTest
   attachment_model MinimalAttachment
+
+  def test_should_be_able_to_set_a_random_attribute
+    attachment = attachment_model.new(:spare_data => "test")
+    assert_equal "test", attachment.spare_data
+  end
+
 end
