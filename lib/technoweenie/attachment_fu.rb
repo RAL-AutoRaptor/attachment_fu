@@ -313,6 +313,9 @@ module Technoweenie # :nodoc:
 
       # Returns true if the attachment data will be written to the storage system on the next save
       def save_attachment?
+        # if we don't have a filename we can't save - this allows for a lot of errors to 
+        # bubble up instead of getting hung up trying to rename a file over top of a directory
+        return false if filename.blank?
         File.file?(temp_path.to_s)
       end
 
