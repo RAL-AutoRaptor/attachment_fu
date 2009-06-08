@@ -264,6 +264,18 @@ module Technoweenie # :nodoc:
         image? && respond_to?(:parent_id) && parent_id.nil?
       end
 
+      def disable_resize!
+        @disable_resize = true
+      end
+      
+      def force_save!
+        @force_save = true
+      end
+      
+      def disable_resize?
+        @disable_resize
+      end
+
       # Returns the class used to create new thumbnails for this attachment.
       def thumbnail_class
         self.class.thumbnail_class
@@ -315,6 +327,7 @@ module Technoweenie # :nodoc:
       def save_attachment?
         # if we don't have a filename we can't save - this allows for a lot of errors to 
         # bubble up instead of getting hung up trying to rename a file over top of a directory
+        return true if @force_save
         return false if filename.blank?
         return false unless filename_changed? or new_record?
         File.file?(temp_path.to_s)
@@ -453,7 +466,11 @@ module Technoweenie # :nodoc:
         # Cleans up after processing.  Thumbnails are created, the attachment is stored to the backend, and the temp_paths are cleared.
         def after_process_attachment
           if @saved_attachment
-            if respond_to?(:process_attachment_with_processing) && thumbnailable? && !attachment_options[:thumbnails].blank? && parent_id.nil?
+            if respond_to?(:process_attachment_with_processing) && 
+                thumbnailable? && 
+                !disable_resize? &&
+                !attachment_options[:thumbnails].blank? &&
+                parent_id.nil?
               temp_file = temp_path || create_temp_file
               attachment_options[:thumbnails].each { |suffix, size| create_or_update_thumbnail(temp_file, suffix, *size) }
             end

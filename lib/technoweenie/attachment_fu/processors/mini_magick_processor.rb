@@ -28,10 +28,11 @@ module Technoweenie # :nodoc:
         def process_attachment_with_processing
           return unless process_attachment_without_processing
           with_image do |img|
-            resize_image_or_thumbnail! img
+            resize_image_or_thumbnail! img unless disable_resize?
             self.width = img[:width] if respond_to?(:width)
             self.height = img[:height] if respond_to?(:height)
-            callback_with_args :after_resize, img
+            return if disable_resize?
+            callback_with_args :after_resize, img 
           end if image?
         end
  
