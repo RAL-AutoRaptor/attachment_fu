@@ -1,23 +1,31 @@
 module BaseAttachmentTests
   def test_should_create_file_from_uploaded_file
     assert_created do
-      attachment = upload_file :filename => '/files/foo.txt'
+      attachment = upload_file :filename => '/files/foo.txt', :content_type => "text/plain"
       assert_valid attachment
       assert !attachment.db_file.new_record? if attachment.respond_to?(:db_file)
-      assert  attachment.image?
+      assert !attachment.image?
       assert !attachment.size.zero?
-      #assert_equal 3, attachment.size
+      assert_equal 3, attachment.size
       assert_nil      attachment.width
       assert_nil      attachment.height
     end
   end
   
+  def test_should_default_to_application_octet_stream_when_content_type_is_not_known 
+    assert_created do
+      attachment = upload_file(:filename => '/files/rails.png', :content_type => "")
+      assert_valid attachment
+      assert_equal "application/octet-stream", attachment.content_type
+    end
+  end
+  
   def test_should_create_file_from_merb_temp_file
     assert_created do
-      attachment = upload_merb_file :filename => '/files/foo.txt'
+      attachment = upload_merb_file :filename => '/files/foo.txt', :content_type => "text/plain"
       assert_valid attachment
       assert !attachment.db_file.new_record? if attachment.respond_to?(:db_file)
-      assert  attachment.image?
+      assert !attachment.image?
       assert !attachment.size.zero?
       #assert_equal 3, attachment.size
       assert_nil      attachment.width
@@ -33,6 +41,7 @@ module BaseAttachmentTests
       
       attachment.set_temp_data 'wtf'
       assert attachment.save_attachment?
+      assert attachment.image?
       attachment.save!
       
       assert_equal 'wtf', attachment_model.find(attachment.id).send(:current_data)
@@ -62,7 +71,7 @@ module BaseAttachmentTests
   end
   
   def test_should_save_without_updating_file
-    attachment = upload_file :filename => '/files/foo.txt'
+    attachment = upload_file :filename => '/files/foo.txt', :content_type => "text/plain"
     assert_valid attachment
     assert !attachment.save_attachment?
     assert_nothing_raised { attachment.save! }

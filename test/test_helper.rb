@@ -1,12 +1,17 @@
 $:.unshift(File.dirname(__FILE__) + '/../lib')
 
 ENV['RAILS_ENV'] = 'test'
-ENV['RAILS_ROOT'] ||= File.dirname(__FILE__) + '/../../../..'
+ENV['RAILS_ROOT'] ||= File.dirname(__FILE__) + "/.." 
+RAILS_ROOT = ENV['RAILS_ROOT']
 
 require 'test/unit'
 require File.expand_path(File.join(ENV['RAILS_ROOT'], 'config/environment.rb'))
 require 'active_record/fixtures'
-require 'action_controller/test_process'
+require 'init' # fire up our plugin
+
+class ActiveSupport::TestCase
+  include ActiveRecord::TestFixtures
+end
 
 config = YAML::load(IO.read(File.dirname(__FILE__) + '/database.yml'))
 ActiveRecord::Base.logger = Logger.new(File.dirname(__FILE__) + "/debug.log")
@@ -35,16 +40,16 @@ ActiveRecord::Base.establish_connection(config[db_adapter])
 
 load(File.dirname(__FILE__) + "/schema.rb")
 
-Test::Unit::TestCase.fixture_path = File.dirname(__FILE__) + "/fixtures"
-$LOAD_PATH.unshift(Test::Unit::TestCase.fixture_path)
+ActiveSupport::TestCase.fixture_path = File.dirname(__FILE__) + "/fixtures"
+$LOAD_PATH.unshift(ActiveSupport::TestCase.fixture_path)
 
-class Test::Unit::TestCase #:nodoc:
+class ActiveSupport::TestCase #:nodoc:
   include ActionController::TestProcess
   def create_fixtures(*table_names)
     if block_given?
-      Fixtures.create_fixtures(Test::Unit::TestCase.fixture_path, table_names) { yield }
+      Fixtures.create_fixtures(ActiveSupport::TestCase.fixture_path, table_names) { yield }
     else
-      Fixtures.create_fixtures(Test::Unit::TestCase.fixture_path, table_names)
+      Fixtures.create_fixtures(ActiveSupport::TestCase.fixture_path, table_names)
     end
   end
 
@@ -58,8 +63,8 @@ class Test::Unit::TestCase #:nodoc:
     FileUtils.rm_rf File.join(File.dirname(__FILE__), 'files')
   end
 
-  self.use_transactional_fixtures = true
-  self.use_instantiated_fixtures  = false
+  # self.use_transactional_fixtures = true
+  # self.use_instantiated_fixtures  = false
 
   def self.attachment_model(klass = nil)
     @attachment_model = klass if klass 
@@ -114,6 +119,10 @@ class Test::Unit::TestCase #:nodoc:
           yield
         end
       end
+    end
+    
+    def assert_valid(o)
+      assert o.valid?, "object #{o} should be valid, but was not"
     end
     
     def assert_not_created

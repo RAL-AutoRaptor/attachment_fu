@@ -1,6 +1,6 @@
 require File.expand_path(File.join(File.dirname(__FILE__), 'test_helper'))
 
-class CSVAttachmentTest < Test::Unit::TestCase
+class CSVAttachmentTest < ActiveSupport::TestCase
   attachment_model SmallAttachment
 
   # should deal with blank content_type from safari issues
@@ -13,7 +13,7 @@ class CSVAttachmentTest < Test::Unit::TestCase
   end  
 end
 
-class OrphanAttachmentTest < Test::Unit::TestCase
+class OrphanAttachmentTest < ActiveSupport::TestCase
   include BaseAttachmentTests
   attachment_model OrphanAttachment
   

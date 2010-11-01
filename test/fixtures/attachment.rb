@@ -114,6 +114,10 @@ class MinimalAttachment < ActiveRecord::Base
   def filename
     "#{id}.file"
   end
+  
+  def filename_changed?
+    false
+  end
 end
 
 begin

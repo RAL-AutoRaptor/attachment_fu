@@ -364,6 +364,7 @@ module Technoweenie # :nodoc:
         end
         # hack to deal with safari not passing a content type for csv files
         self.content_type = "text/csv" if content_type.blank? and filename =~ /\.csv$/i
+        self.content_type = "application/octet-stream" if content_type.blank?
         if file_data.is_a?(StringIO)
           file_data.rewind
           set_temp_data file_data.read
@@ -394,6 +395,7 @@ module Technoweenie # :nodoc:
 
       # Writes the given data to a Tempfile and adds it to the collection of temp files.
       def set_temp_data(data)
+        force_save! if data
         temp_paths.unshift write_to_temp_file data unless data.nil?
       end
 
