@@ -1,7 +1,7 @@
 module Technoweenie # :nodoc:
   module AttachmentFu # :nodoc:
     @@default_processors = %w(ImageScience Rmagick MiniMagick Gd2 CoreImage)
-    @@tempfile_path      = File.join(RAILS_ROOT, 'tmp', 'attachment_fu')
+    @@tempfile_path      = File.join(Rails.root, 'tmp', 'attachment_fu')
     @@content_types      = [
       'image/jpeg',
       'image/pjpeg',
@@ -177,7 +177,7 @@ module Technoweenie # :nodoc:
       end
 
       def self.extended(base)
-        base.class_inheritable_accessor :attachment_options
+        base.class_attribute :attachment_options
         base.before_destroy :destroy_thumbnails
         base.before_validation :set_size_from_temp_path
         base.after_save :after_process_attachment
@@ -193,7 +193,8 @@ module Technoweenie # :nodoc:
         #
         #   class Foo < ActiveRecord::Base
         #     acts_as_attachment
-        #     after_resize do |record, img|
+        #     after_resize do |record|
+        #       img = get_image_from_record_somehow
         #       record.aspect_ratio = img.columns.to_f / img.rows.to_f
         #     end
         #   end
@@ -307,7 +308,7 @@ module Technoweenie # :nodoc:
             :filename                 => thumbnail_name_for(file_name_suffix),
             :thumbnail_resize_options => size
           }, false)
-          callback_with_args :before_thumbnail_saved, thumb
+          thumb.run_callbacks :before_thumbnail_saved 
           thumb.save!
         end
       end
@@ -483,7 +484,7 @@ module Technoweenie # :nodoc:
             save_to_storage
             @temp_paths.clear
             @saved_attachment = nil
-            callback :after_attachment_saved
+            run_callbacks :after_attachment_saved
           end
         end
 
@@ -493,40 +494,6 @@ module Technoweenie # :nodoc:
             resize_image(img, attachment_options[:resize_to])
           elsif thumbnail_resize_options # thumbnail
             resize_image(img, thumbnail_resize_options)
-          end
-        end
-
-        # Yanked from ActiveRecord::Callbacks, modified so I can pass args to the callbacks besides self.
-        # Only accept blocks, however
-        if ActiveSupport.const_defined?(:Callbacks)
-          # Rails 2.1 and beyond!
-          def callback_with_args(method, arg = self)
-            notify(method)
-
-            result = run_callbacks(method, { :object => arg }) { |result, object| result == false }
-
-            if result != false && respond_to_without_attributes?(method)
-              result = send(method)
-            end
-
-            result
-          end
-
-          def run_callbacks(kind, options = {}, &block)
-            options.reverse_merge!( :object => self )
-            self.class.send("#{kind}_callback_chain").run(options[:object], options, &block)
-          end
-        else
-          # Rails 2.0
-          def callback_with_args(method, arg = self)
-            notify(method)
-
-            result = nil
-            callbacks_for(method).each do |callback|
-              result = callback.call(self, arg)
-              return false if result == false
-            end
-            result
           end
         end
 

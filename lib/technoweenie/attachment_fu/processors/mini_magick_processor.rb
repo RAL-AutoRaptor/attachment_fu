@@ -32,7 +32,7 @@ module Technoweenie # :nodoc:
             self.width = img[:width] if respond_to?(:width)
             self.height = img[:height] if respond_to?(:height)
             return if disable_resize?
-            callback_with_args :after_resize, img 
+            run_callbacks :after_resize
           end if image?
         end
  
