@@ -424,9 +424,13 @@ module Technoweenie # :nodoc:
       end
 
       protected
+      
+        # stolen from Rails
+        FILENAME_MAX_SIZE = 228 # max filename size on file system is 255, minus room for timestamp and random characters appended by Tempfile (used by atomic write)
+        
         # Generates a unique filename for a Tempfile.
         def random_tempfile_filename
-          "#{rand Time.now.to_i}#{filename || 'attachment'}"
+          "#{rand Time.now.to_i}#{filename ? filename[0,FILENAME_MAX_SIZE] : 'attachment'}"
         end
 
         def sanitize_filename(filename)
